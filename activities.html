@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">  
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<head>
+
+<script>
+var app = angular.module('myApp', []);
+app.controller('cnt', function($scope,$http) {
+
+$scope.today='';
+$scope.records={}
+$scope.selected={};
+
+$scope.init=function()
+{
+$scope.loaddata();
+}
+
+$scope.loaddata=function()
+{
+
+$http.get('http://localhost:3005/display').then(function(response)
+ { 
+   $scope.records ={};
+   console.log($scope.records); 
+   $scope.records = response.data;   
+ });
+
+}
+
+$scope.templateselector= function(templaterecord)
+{
+ if(templaterecord._id === $scope.selected._id)
+ 	return 'edit'
+ else
+ 	return 'display'
+}
+
+$scope.editrecord= function(templaterecord)
+{
+	$scope.selected=angular.copy(templaterecord);
+}
+
+$scope.saverecord= function(id)
+{
+
+   $scope.records[id]=angular.copy($scope.selected);
+     
+   var data = {id :$scope.selected.obid, activity :$scope.selected.activity , timespent:$scope.selected.timespent};
+   
+   $http.post('http://localhost:3005/update', JSON.stringify(data),function (response) {	  
+   
+});
+     $scope.selected={}; 
+}
+
+$scope.delrecord= function(a)
+{
+   var data={id:a.obid};
+   $http.post ("http://localhost:3005/del",JSON.stringify(data),function(response){});
+   $scope.loaddata();  
+}
+
+$scope.canceledit= function()
+{
+  $scope.selected={}; 
+}
+
+$scope.adddata=function()
+{
+    var today = new Date();
+    
+    var data={acdate:today,activity:$scope.activity , timespent:$scope.timespent};
+  
+    $http.post('http://localhost:3005/add',JSON.stringify(data),function(response){
+
+    });
+
+      $scope.activity='';
+      $scope.timespent='';
+    
+      $scope.loaddata();  
+}
+});
+
+</script>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div ng-app="myApp" ng-controller="cnt" ng-init="init()">
+
+<center>
+<h3>DAILY ACTIVITIES</h3>
+<input ng-model="activity" placeholder="activity">
+
+<input ng-model="timespent" placeholder="timespent">
+
+<button ng-click="adddata()">Add</button>
+
+</center>
+
+<table class="table table-hover">
+
+<thead>
+
+   <tr>
+     <th>Activity Date</th>
+     <th>Activity</th>
+     <th>Time Spent</th>
+   </tr>
+
+</thead>
+
+<tbody>
+
+<tr ng-repeat="x in records" ng-include="templateselector(x)">
+
+</tr>
+
+</tbody>  
+
+</table>
+
+<!-- templates -->
+<script type="text/ng-template" id="display" >
+<td>{{x.acdate}}</td>
+<td>{{x.activity}}</td>
+<td>{{x.timespent}}</td>
+<td><button ng-click="editrecord(x)">Edit</button></td>
+<td><button ng-click="delrecord(x)">Remove</button></td>
+</script>
+
+<script type="text/ng-template" id="edit">
+
+<td><input ng-model="selected.activity"></td>
+<td><input ng-model="selected.timespent"></td>
+<td><button ng-click="saverecord($index)">save</button> <button ng-click="canceledit()">cancel</button></td>
+
+</script>
+
+</div>
+</div>
+</div>
+
+</body>
+</html>
