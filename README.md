@@ -10,7 +10,7 @@ Requirements:
 
 Steps :
 
-Start Mongo server by going into bin folder of your mongodb and enter mongo start
-Download the files
-In activitydb.js, make necessary changes under app.get('/')  
-Test by going to http://localhost:3005/
+Start Mongo server by opening command prompt in bin folder of your mongodb and enter "mongo start" command.
+Download the files.
+In activitydb.js, make necessary changes under app.get('/').
+Test by going to http://localhost:3005/.
