@@ -3,7 +3,7 @@ var bodyParser = require('body-parser')
 var mydbinstance;
 
 const express= require('express');
-
+const assert = require('assert');
 const app = new express();
 
 app.use(bodyParser.json());
@@ -12,6 +12,8 @@ app.use(bodyParser.urlencoded(true));
 
 connect_to_database();
 
+//change this !
+activities = '/Users/kartikdatrika/Documents/git_repo/Node-MongoDB-Angular-CRUD/activities.html'
 
 function connect_to_database()
 {   
@@ -19,45 +21,53 @@ function connect_to_database()
   
   MongoClient.connect(url,function(err,db)
   {
+   assert.equal(null, err);
+   console.log("Connected correctly to server");
    if(err)
     throw err;
     mydbinstance=db.db("mydb");
-  });   
+ });
 }
 
 app.get('/',function(req,res)
 {
-  res.sendFile('C://Users/lenovo/Desktop/node/mongo crud/activities.html');
+  res.sendFile(activities);
 });
 
 app.get('/display',function(req,res)
 {
   
   mydbinstance.collection("life").find().toArray(function(err,result)
-  {
+ {
    res.json(result);  
   });
 });
 
 app.post('/add',function(req,res)
 {
- mydbinstance.collection("life").find().sort({_id:-1}).limit(1).toArray(function(err,result)
+ var nextId = mydbinstance.collection("life").find().sort({_id:-1}).limit(1).toArray(function(err,result)
  {
-    var nextId;
-    if(result[0].obid == null)
-      nextId=1;
-    else
-      nextId=parseInt(result[0].obid)+1;
-
-    var dataobj = {obid:nextId,acdate:req.body.acdate,activity:req.body.activity,timespent:req.body.timespent};
-    mydbinstance.collection("life").insertOne(dataobj,function(err,res)
-    {
-    if(err)
-      throw err;
-    });
+  return result[0].obid;
  });
+  
+  if(nextId == null)
+    nextId=1;
+  else
+    nextId=parseInt(nextId)+1;
+
+  var dataobj = {obid:nextId,acdate:req.body.acdate,activity:req.body.activity,timespent:req.body.timespent};
+  mydbinstance.collection("life").insertOne(dataobj,function(err,res)
+  {
+  if(err)
+    throw err;
+  });
+
+  mydbinstance.collection("life").find().toArray(function(err,result)
+  {
+   res.json(result);  
+  });
  
-});
+}); 
 
 app.post('/update',function(req,res)
 {
